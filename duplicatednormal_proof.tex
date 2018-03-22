@@ -16,13 +16,18 @@
 \begin{document}
 \section{Normal operation analysis}
 Definitions:  
-\begin{definition}A state graph consists of <V, S, T> where $V$ is the ordered set of finite signals where $1\leq k \leq n$ indexes into $V$ and gives the signal $v_k$.  $S$ is the set of all states in the state graph (note that this is a subset of $2^n$) <-this might not be right math...
+\begin{definition}A state graph consists of <V, S, T> where $V$ is the ordered set of finite signals where $1\leq k \leq n$ indexes into $V$ and gives the signal $v_k$.  $S$ is the set of all states in the state graph $V \mapsto B$  $B={0,1}$(note that this is a subset of $2^n$) <-this might not be right math...
 and s(k) denotes the (binary) value of the state at signal $v_k$.  T is the set of all transitions in the state graph $T \subseteq S X S$ and $(s_i, s_j) \in T$ denotes a transition from the state $s_i$ to $s_j$.  A transition pair $s_i$ and $s_j$ are under additional constraint 
-$\exists k$ st $s_i(k)\neq s_j(k)$ and $s_i(l)=s_j(l)$ for all other $l \neq k$.\end{definition}
+$\exists k$ st $s_i(k)\neq s_j(k)$ and $s_i(l)=s_j(l)$ for all other $l \neq k$. \end{definition}
 \newline
 State graphs can be implemented as an asynchronous circuit where the signals of a state graph $s$ maps to wires in the circuit $w$. (one to one mapping?)  We can also map the set $S$ to a set $S_w$ of state of wires. The circuit has a set of transitions, for all $w_i \in S_w$, 
-$(w_i, w_j)$ is a transition of the circuit if and only if $(s_i, s_j) \in T$.  An additional property of the asynchronous circuit is that one can view each wire as separate black boxes.  Inputs from the rest of the circuit (other $w_k$) feed into a logic block and outputs the wire value ()
-An asynchronous circuit can be an implementation of a state graph (do I need to talk about state graph?)
+$(w_i, w_j)$ is a transition of the circuit if and only if $(s_i, s_j) \in T$.
+\begin{definition}A wire $k$ in the circuit is \textbf{excited} in state $w_i$ if $(w_i,w_j)$ is a transition and $w_i(k) \neq w_j(k)$\end{definition} (may need to change this definition to s'=/=s)
+
+\begin{definition}An asynchronous circuit is \textbf{semi-modular} if $\forall w_i \in S_w$ and $\forall (w_i,w_j)$ transitions and $w_i(k) \neq w_j(k)$, and $l\neq k$ then if $w_i(l)$ is excited, $w_j(l)$ is also excited \end{definition}
+Semi-modularity means a wire stays excited until it transitions to the excited value.  Circuits that are semi-modular are also speed independent. \newline
+
+An additional property of the asynchronous circuit is that one can view each wire as separate black boxes.  Inputs from the rest of the circuit (other $w_k$) feed into a logic block and outputs the wire value $w_l$
 
 We transform the circuit by making a duplicated copy of the logic components to each wire, and interconnecting the outputs of the logic components to two c-elements.  We want to show this circuit behaves similarly
 compared to the original circuit under normal operation.  <need a formal def of similarly> Here we define similarly as given a trace in the original circuit, the same trace (with corresponding wires) can occur in the transformed circuit.  And if given a trace
