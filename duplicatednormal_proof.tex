@@ -1,4 +1,8 @@
+%4/4 changes, made general edits and changed (s_i,s_j) \in T to T(s_i,s_j)
+%changed all the S_w to S, w_i w_j to s_i s_j, w to v, k l to v w
+
 \documentclass{article}
+\usepackage{amsfonts}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -7,7 +11,7 @@
 \author{Zoey Zhou}
 \date{\today}  
 \usepackage{graphicx}
-\graphicspath{ {c:/Users/cuizy/Downloads/} }
+\graphicspath{ {c:/Desktop/} }
 
 \usepackage{amsthm}
 \newtheorem*{definition}{Definition}
@@ -16,55 +20,63 @@
 \begin{document}
 \section{Normal operation analysis}
 Definitions:  
-\begin{definition}A state graph consists of <V, S, T> where $V$ is the ordered set of finite signals where $1\leq k \leq n$ indexes into $V$ and gives the signal $v_k$.  $S$ is the set of all states in the state graph $V \mapsto B$  $B={0,1}$(note that this is a subset of $2^n$) %<-this might not be right math...
-and s(k) denotes the (binary) value of the state at signal $v_k$.  T is the set of all transitions in the state graph $T \subseteq S X S$ and $(s_i, s_j) \in T$ denotes a transition from the state $s_i$ to $s_j$.  A transition pair $s_i$ and $s_j$ are under additional constraint 
-$\exists k$ st $s_i(k)\neq s_j(k)$ and $s_i(l)=s_j(l)$ for all other $l \neq k$. \end{definition}
+\begin{definition}A state graph consists of <V, S, T> where $V$ is the set of finite signals $v_1 .. v_n$.  $S$ is the function $S: V \to \{0,1\}$ %<-this might not be right math... and s(k) denotes the (binary) value of the state at signal $v_k$.  
+which maps each variable to a boolean, an element of S is called a state. T is the set of all transitions in the state graph $T \subseteq S \times S$.  \end{definition}
 
-State graphs can be implemented as an asynchronous circuit where the signals of a state graph $s$ maps to wires in the circuit $w$. %(one to one mapping?)  
-We can also map the set $S$ to a set $S_w$ of state of wires. The circuit has a set of transitions, for all $w_i \in S_w$, $(w_i, w_j)$ is a transition of the circuit if and only if $(s_i, s_j) \in T$.
-\begin{definition}A wire $k$ in the circuit is \textbf{excited} in state $w_i$ if $(w_i,w_j)$ is a transition and $w_i(k) \neq w_j(k)$.  Alternatively if one treats the output of wire $k$ as a function of the current state $w_i$, then $f(w_i)\neq w_i(k)$\end{definition} 
+A transition has the additional constraint that only one signal is allowed to change between the two states in the transition.
+\begin{definition}A transition $T(s_i, s_j)$ denotes a transition from the state $s_i$ to $s_j$.  Then $\exists w$ st $s_i(w)\neq s_j(w)$ and $s_i(u)=s_j(u)$ for all other $u \neq w$. 
+\end{definition}
+
+%major revision needed
+State graphs can be implemented as an asynchronous circuit where the signals of a state graph $V$ maps to wires in the circuit. %(one to one mapping?)  
+Then the set of states $S$ can also describe the state of wires of the circuit.  The circuit has a set of transitions, for all $s_i \in S$, $(s_i, s_j)$ is a transition of the circuit if and only if $T(s_i, s_j)$.%set of transitions instead of transitions
+\begin{definition}A wire $u$ in the circuit is \textbf{excited} in state $s_i$ if $T(s_i,s_j)$ and $s_i(u) \neq s_j(u)$.  Alternatively if one treats the output of wire $u$ as a function of the current state $s_i$, then $f(s_i)\neq s_i(u)$\end{definition}
 %(may need to change this definition to s'=/=s) <- added in
 
-\begin{definition}An asynchronous circuit is \textbf{semi-modular} if $\forall w_i \in S_w$ and $\forall (w_i,w_j)$ transitions and $w_i(k) \neq w_j(k)$, and $l\neq k$ then if $w_i(l)$ is excited, $w_j(l)$ is also excited \end{definition}
-Semi-modularity means a wire stays excited until it transitions to the excited value.  Circuits that are semi-modular are also speed independent. \newline
+Semi-modularity means once a wire is excited, it stays excited until it transitions to the excited value.  Circuits that are semi-modular are also speed independent.  Formally this can be defined as follows:
+\begin{definition}An asynchronous circuit is \textbf{semi-modular} if $\forall s_i \in S$ and $\forall T(s_i,s_j)$ and $s_i(u) \neq s_j(u)$, and $w\neq u$ then if $s_i(w)$ is excited, $s_j(w)$ is also excited \end{definition}
 
-\begin{definition} \textbf{Trace} of a circuit is a sequence of states of length n.  $[0 .. n-1] \mapsto S$ and $(s_i,s_j) \in T$ for $0 \leq i \leq n-2$\end{definition} 
+\begin{definition} \textbf{Trace} $\sigma$ of a circuit is a sequence of states (of length n or infinite) where $\sigma_i$ is the $i^{th}$ term of the sequence.  $\sigma: \mathbb{N} \to S$ and $T(\sigma_i,\sigma_{i+1})$ for $\forall i \in \mathbb{N}$\end{definition} 
 % all states or just the state graph ones
 
-\begin{definition} Two circuits A and B are \textbf{similar} if all traces from A can occur in B and vice versa\end{definition}
+\begin{definition} Two circuits A and B are \textbf{equivalent} if the set of all traces from circuit A and circuit B are equal $\{\sigma^A \}=\{\sigma^B \}$.
+\end{definition}
 %good enough for now
 
-An additional property of the asynchronous circuit is that one can view each wire as separate black boxes.  Inputs from the rest of the circuit (other $w_k$) feed into a logic block and outputs the wire value $w_l$.  We call the instantaneous value of the logic block $l$ of a state s as $f_l(s)$.
+An additional property of the asynchronous circuit is that one can view each wire as separate black boxes.  For the wire $w$, inputs from the rest of the circuit ($I_w$) feed into a gate and outputs the wire value $w$.  We call the instantaneous value of the gate $w$ of a state s as $f_w(s|_I)$, where f is function $f:[I \to \{0,1\} \to \{0,1\}]$ and $s|_I$ is the state projected on the inputs of $w$.  If inputs to the gate remain constant, the output $w$ will eventually take the value specified by $f_w(s|_I)$  %maybe change w again, also the f(s) vs f(I) thing...
 \newline
 
-We transform the circuit by making a duplicated copy of the logic blocks to each wire, and interconnecting the outputs of the logic blocks to two c-elements.  We label the duplicated circuit as circuit A and circuit B.  Then we add in intermediate wires $w^A'(k)$ and $w^B'(k)$ that is the output
-of the logic blocks $k$ of circuits A and B respectively.  $w^A'(k)$ and $w^B'(k)$ are inputs to two C-elements.  We can (arbitrarily) label one of the C-element outputs as $w^A(k)$ and the other output as $w^B(k)$.  These then connect to other circuit A and circuit B logic blocks respectively.
-We want to show this circuit behaves similarly to the original circuit under normal operation.  %<need a formal def of similarly<- done <- need to be augmented cuz additional wires
+We transform the circuit by making a duplicated copy of the gates to each wire, and connect the outputs of the two gates to two c-elements.  We label the duplicated circuit halves as circuit A and circuit B.  Then for each wire $w$ we add in intermediate wires $x^A$ and $x^B$ that is the output of the gate $w$ of circuits A and B respectively.  $x^A$ and $x^B$ are also the inputs to two C-elements.  We can (arbitrarily) label one of the C-element outputs as $w^A$ and the other output as $w^B$.  These then connect to other gates in circuit A and circuit B respectively. \newline
+\includegraphics[width=\textwidth]{circuitforproof}
+Because the transformed circuit has some extra wires we want to be able to compare between the wires of the original circuit and that of the duplicated circuit halves.  We define this correspondence to be the mapping of the original wire $w$ to $w^A$ in circuit A and $w^B$ in circuit B.  Additionally for the state graph of the duplicated circuit, the combined states are the state of circuit A and the state of circuit B with quadruple the number of wires for each wire in the original circuit.  For a trace in the duplicated circuit we can project the full states onto a shortened list of wires (ie the wires corresponding to the original circuit), the resulting trace may have successive repeated states and we delete the repeats to obtain a valid trace on the shortened wires.  %do I need to define all the new transitions in duplicated circuit?  maybe
+\newline
+We want to show this circuit behaves similar to the original circuit under normal operation.  %<need a formal def of similarly<- done <- need to be augmented cuz additional wires <- fine if I talk about deleting extra wires and removing 
 Of course this depends on the initial configuration of the transformed circuit.  But if we set up the initial correspondence correctly, we can show certain properties in all of the traces that can occur.  
 \newline
-%need to talk about half of a duplicated circuit <- done
+%need to talk about half of a duplicated circuit <- done 
 
-To show that the transformed circuit behaves similar to the original circuit, we have the following properties:
+
+To show that the transformed circuit behaves similar to the original circuit, without loss of generality we define the properties for only the A half of the circuit we then show the same reasoning applies to B half of the circuit.  We have the following properties:
 \begin{enumerate} %1) 2) 3)
-\item  the trace that occurs in A and B is a trace in original circuit.  If a transition happens from $s_i$, then the next state $s_j$ is either $s_i=s_j$ or $(s_i,s_j) \in T$  %(either trace or state)...
+\item  The trace that occurs in A is a trace in original circuit.  If a transition happens from $s_i$, then the next state $s_{i+1}$ is either $s_i=s_{i+1}$ or $T(s_i,s_{i+1})$  %(either trace or state)...  Also maybe delete the trace line... it becomes a general provable property
 %I feel like this is a bit funky, may have to redo 
-\item  Given a state w in the original circuit, if wire k is excited in this state, $f_k(w)\neq w(k)$, then if half of the duplicated circuit A or B is also in this state then $f_k(w) \neq w'(k)$ or $w'(k) \neq w(k)$ (exactly one of these is true).  
-In addition, if wire k is not excited in the original circuit, $f_k(w)=w(k)$, then in the duplicated circuit half $f_k(w)=w'(k)=w(k)$.  %<define correspondence>
-\item  For some k, if $w^A(k)\neq w^B(k)$ then $w^A'(k)=w^B'(k)$ (if the same output wire in A and B are different, this indicates that one of the c-elements to A or B is excited.)
+\item  (If a wire is excited in the original circuit then exactly one of the gates or the c-element is excited in the duplicated half.  If a wire is not excited, then neither the gates or the c-element is excited) Given a state $s$ in the original circuit, if wire $w$ is excited in this state, $f_w(s|_I)\neq w$, and given circuit A is also in this state then $f_w(s|_I) \neq x^A$ or $x^A \neq w^A$ (exactly one of these is true).  
+In addition, if wire $w$ is not excited in the original circuit, $f_w(s|_I)=w$, then in the duplicated circuit half $f_w(s|_I)=x^A=w^A$.  %<define correspondence> <- defined above
+\item  If the same output wire in A and B are different, this indicates that one of the c-elements to A or B is excited.  For some wire $w$, if $w^A\neq w^B$ then $x^A=x^B$ 
 \end{enumerate}
-We prove these properties through induction.  Assume we are in a state \{$w_i^A$ $w_j^B$\} where these 3 properties are true.  Then 
+We prove these properties through induction.  The initial correspondence is for some initial state in the original circuit $s_0 \in S$, for each wire $w$ assign the wires in the duplicated circuit $x^A=x^B=w^A=w^B=w$.  Then all 3 listed properties above are true.  
+Next, assume we are in a state \{$s_i^A$ $s_j^B$\} where these 3 properties are true.  Then 
 \begin{enumerate} %prove the same properties for the next step
-\item  Due to property 2) we know that only wires excited in the original circuit (in state $w_i^A$ or $w_j^B$) may have excited components.  We focus on $w_i^A$ first, for all wires k that are excited in the original, 
-if $f_k(w_i^A)\neq w_i^A'(k)$ then a transition on $w_i^A'(k)$ may occur.  Otherwise if $w_i^A'(k) \neq w_i^A(k)$ then if $w_i^A'(k) = w_j^B'(k)$ the c-element is excited and $w_i^A(k)$ can transition to the new value $w_{i+1}^A(k)=w_i^A'(k)$. 
-Since k is excited in the original circuit, $w_{i+1}^A$ is also a state in the original circuit and $(w_
-i^A, w_{i+1}^A)\in T$.  Otherwise the c-element is not excited and no transition can occur. The same is true for $w_j^B$
-\item  Using the same reasoning as above a transition may only take place in circuit A if the wire k is excited in the original.   if $f_k(w_i^A)\neq w_i^A'(k)$ and a transition on $w_i^A'(k)$ occurs then $f_k(w_{i+1}^A)= w_{i+1}^A'(k)$ and $w_{i+1}^A'(k)\neq w_{i+1}^A(k)$.  
-If $w_i^A'(k) \neq w_i^A(k)$ and $w_i^A'(k) = w_j^B'(k)$ and $w_i^A(k)$ transitions then  $w_{i+1}^A'(k)= w_{i+1}^A(k)$, in addition since $w_{i+1}^A$ is also a state in the original circuit (from above) then the set of newly excited wires are the same in the original circuit and circuit A.  
+\item  Due to property 2) we know that only wires excited in the original circuit in state $s_i$ may have excited components.  For all wires $w$ that are excited in the original circuit, if $f_w(s_i|_I)\neq x^A$ then a transition on $x^A$ may occur (the value of $w^A$ remains the same).  Otherwise if $x^A \neq w^A$ then if $x^A = x^B$ the c-element is excited and $w^A$ can transition to the new value $w_{next}^A=x^A$.  If $x^A \neq x^B$ then no transition can occur. This is the same as $w$ transitioning in the original circuit and $T(s_i, s_{i+1})$.  When the transition occurs in $x^A$ then $s_i=s_{i+1}$. 
+\item  Using the same reasoning as above a transition may only take place in circuit A if the wire $w$ is excited in the original.   If $f_w(s_i)\neq x^A$ and a transition on $x^A$ occurs then $f_w(s_{i+1}|_I)= x_{next}^A$ and $x_{next}^A\neq w_{next}^A$.  
+If $x^A \neq w^A$ and $x^A = x^B$ and $w^A$ transitions then  $x_{next}^A= w_{next}^A$, in addition since $s_{i+1}$ is also a state in the original circuit (from above) then the set of newly excited wires are the same in the original circuit and circuit A.  
 %need to expand on newly excited wires
-For all wires k in the newly excited set, since k was previously not excited, then $f_k(w_{i+1}^A)\neq w_{i+1}^A'(k)$ and $w_{i+1}^A'(k)= w_{i+1}^A(k)$.  Due to semi-modularity the wires excited at $w_(i)^A$ is still excited at $w_{i+1}^A$ with the exception of the wire that transitioned and the same is true in circuit A.
-And the wires not excited at $w_(i)^A$ is not excited at $w_{i+1}^A$ and the same is true in circuit A.  Thus property 2 holds in any next state $w_{i+1}^A$
-\item  Suppose this property is not true in a possible next state ($w_{i+1}^A(k)\neq w_{j+1}^B(k)$ and $w_{i+1}^A'(k)\neq w_{j+1}^B'(k)$).  This means that in the current state if $w_i^A(k)\neq w_j^B(k)$ $w_i^A'(k)=w_j^B'(k)$ then a transition on $w_i^A'(k)$ or $w_j^B'(k)$ occurs.  Without loss of generality, assume $w_j^B(k)=w_j^B'(k)$, then $w_i^A'(k)$ cannot transition or it would violate property 2 above.  Then $w_j^B'(k)$ transitions.  Because of assumption of 3 in state $w_i^A$, $w_j^B$ there is a possible sequence of transitions on the inputs of wire k in circuits A and B so that they are equal.  This means following a trace of h steps in the original circuit  $w_{i+h}^A'(k)$ can be excited which again violates property 2.  Thus the initial assumption is false and this property is true in all possible next states 
+%do I need to define transitions as it occurs here?
+For all wires w in the newly excited set, since w was previously not excited, then $f_w(s_{i+1})\neq x_{next}^A$ and $x_{next}^A= w_{next}^A$.  Due to semi-modularity the wires excited at $s_(i)$ is still excited at $s_{i+1}$ in the original circuit with the exception of the wire that transitioned.  In circuit A, if $f_w(s_i|_I)\neq x^A$ then $f_w(s_{i+1}|_I)\neq x_{next}^A$ since it is the same logic gates and inputs as the original circuit.  And if $x^A \neq w^A$ then $x_{next}^A \neq w_{next}^A$ since no transitions occured in $x^A$ or $w^A$. %what happens in B does not matter here
+For a wire $w$ not excited in $s_i$ and it is not excited in $s_{i+1}$ in the original circuit, in circuit A we have $x^A=w^A$ then $x_{next}^A=w_{next}^A$ and $f_w(s_{i+1}|_I)= x_{next}^A$.  Thus property 2 holds in any next state $s_{i+1}$
+\item  Suppose this property is not true in a possible next state ($w_{next}^A\neq w_{next}^B$ and $x_{next}^A\neq x_{next}^B$).  This means that in the current state if $w^A \neq w^B$ and $x^A=x^B$ then a transition on $x^A$ or $x^B$ occurs.  Without loss of generality, assume $w^B=x^B$, then $x^A$ cannot transition or it would violate property 2 above.  Then $x^B$ transitions.  Because of assumption of 3 in state $s_i^A$, $s_j^B$ there is a possible sequence of transitions on the inputs of wire w in circuits A and B so that they are equal.  This means following a trace of h steps in the original circuit  $x_{i+h}^A$ can be excited which again violates property 2.  Thus the initial assumption is false and this property is true in all possible next states 
 \end{enumerate}
-Finally there is always a transition available since if $w_i^A(k)\neq w_j^B(k)$ we can always use the trick above to produce a sequence of transitions so that $w_i^A(k)= w_j^B(k)$.  And if the circuit is in this state there is a next availble transition following the original circuit
+Finally there is always a transition available since if $w^A\neq w^B$ we can always use the trick above to produce a sequence of transitions so that $w^A= w^B$.  And if the circuit is in this state there is a next availble transition following the original circuit
 
 \end{document}
+
