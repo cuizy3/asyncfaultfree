@@ -1,5 +1,6 @@
 %4/4 changes, made general edits and changed (s_i,s_j) \in T to T(s_i,s_j)
 %changed all the S_w to S, w_i w_j to s_i s_j, w to v, k l to v w
+%4/10 incorporated new sugestions, also what 103 suggested
 
 \documentclass{article}
 \usepackage{amsfonts}
@@ -21,50 +22,51 @@
 \section{Normal operation analysis}
 Definitions:  
 \begin{definition}A state graph consists of <V, S, T> where $V$ is the set of finite signals $v_1 .. v_n$.  $S$ is the function $S: V \to \{0,1\}$ %<-this might not be right math... and s(k) denotes the (binary) value of the state at signal $v_k$.  
-which maps each variable to a boolean, an element of S is called a state. T is the set of all transitions in the state graph $T \subseteq S \times S$.  \end{definition}
+which maps each variable to a boolean, an element of $S$ is called a state. $T$ is the set of all transitions in the state graph and $T \subseteq S \times S$.  \end{definition}
 
 A transition has the additional constraint that only one signal is allowed to change between the two states in the transition.
-\begin{definition}A transition $T(s_i, s_j)$ denotes a transition from the state $s_i$ to $s_j$.  Then $\exists w$ st $s_i(w)\neq s_j(w)$ and $s_i(u)=s_j(u)$ for all other $u \neq w$. 
+\begin{definition}A transition $T(s_i, s_j)$ denotes a transition from the state $s_i$ to $s_j$.  Then there exists a signal $w$ and any signal $u$ where $u \neq w$ such that $s_i(w)\neq s_j(w)$ and $s_i(u)=s_j(u)$ . 
 \end{definition}
 
 %major revision needed
-State graphs can be implemented as an asynchronous circuit where the signals of a state graph $V$ maps to wires in the circuit. %(one to one mapping?)  
-Then the set of states $S$ can also describe the state of wires of the circuit.  The circuit has a set of transitions, for all $s_i \in S$, $(s_i, s_j)$ is a transition of the circuit if and only if $T(s_i, s_j)$.%set of transitions instead of transitions
+State graphs can be implemented as an asynchronous circuit where the signals of a state graph $V$ maps one-to-one to wires in the circuit. %(one to one mapping?)  
+Then the set of states $S$ can also describe the state of wires of the circuit.  The circuit has a set of transitions.  A transition of the circuit from a state $s_i \in S$, to a state $s_j \in S$ exists if and only if $T(s_i, s_j)$.%set of transitions instead of transitions
 \begin{definition}A wire $u$ in the circuit is \textbf{excited} in state $s_i$ if $T(s_i,s_j)$ and $s_i(u) \neq s_j(u)$.  Alternatively if one treats the output of wire $u$ as a function of the current state $s_i$, then $f(s_i)\neq s_i(u)$\end{definition}
 %(may need to change this definition to s'=/=s) <- added in
 
 Semi-modularity means once a wire is excited, it stays excited until it transitions to the excited value.  Circuits that are semi-modular are also speed independent.  Formally this can be defined as follows:
-\begin{definition}An asynchronous circuit is \textbf{semi-modular} if for every $s_i$ and $s_j$ such that $T(s_i,s_j)$ holds, $s_i(u) \neq s_j(u)$, and $w\neq u$ then if $s_i(w)$ is excited, $s_j(w)$ is also excited \end{definition}
+\begin{definition}An asynchronous circuit is \textbf{semi-modular} if for every $s_i$ and $s_j$ such that $T(s_i,s_j)$ holds, and let $u$ and $w$ be wires such that $s_i(u) \neq s_j(u)$ and $w\neq u$, then if $s_i(w)$ is excited, $s_j(w)$ is also excited \end{definition}
 
 \begin{definition} \textbf{Trace} $\sigma$ of a circuit is a sequence of states of infinite length where $\sigma_i$ is the $i^{th}$ term of the sequence.  $\sigma: \mathbb{N} \to S$ and $T(\sigma_i,\sigma_{i+1})$ for $\forall i \in \mathbb{N}$\end{definition} 
 % all states or just the state graph ones
 
 \begin{definition} Two circuits A and B are \textbf{equivalent} if the set of all traces from circuit A and circuit B are equal $\{\sigma^A |\sigma^A$ is a possible trace in $A\}=\{\sigma^B |\sigma^B$ is a possible trace in $B\}$ (Traces(A)= Traces(B)?).
 \end{definition}
-%good enough for now
+%good enough for now, do I need if and only if?
 
-An additional property of the asynchronous circuit is that one can view each wire as a separate black box.  For the wire $w$, inputs from the rest of the circuit ($I_w$) feed into a gate and outputs the wire value $w$.  We call the instantaneous value of the gate $w$ of a state s as $f_w(s|_I)$, where f is function $f:[I \to \{0,1\} \to \{0,1\}]$ and $s|_I$ is the state projected on the inputs of $w$.  If inputs to the gate remain constant, the output $w$ will eventually take the value specified by $f_w(s|_I)$  %maybe change w again, also the f(s) vs f(I) thing...
+An additional property of the asynchronous circuit is that one can view each wire as a separate black box.  For a wire $w$, inputs from the rest of the circuit ($I_w$ and $I_w \subseteq$ V) feed into a gate and outputs the wire value $w$.  We call the instantaneous value of the gate for $w$ of a state $s$ as $f_w(s|_I)$, where f is the function $f:[I \to \{0,1\}] \to \{0,1\}$ and $s|_I$ is the state $s$ projected on the input variables $I_w$.  If inputs to the gate remain constant, the output $w$ will eventually take the value specified by $f_w(s|_I)$  %maybe change w again, also the f(s) vs f(I) thing...
 \newline
 
-We transform the circuit by making a duplicated copy of the gates to each wire, and connect the outputs of the two gates to two c-elements.  We label the duplicated circuit halves as circuit A and circuit B.  Then for each wire $w$ we add in intermediate wires $x^A$ and $x^B$ that is the output of the gate $w$ of circuits A and B respectively.  $x^A$ and $x^B$ are also the inputs to two C-elements.  We can (arbitrarily) label one of the C-element outputs as $w^A$ and the other output as $w^B$.  These then connect to other gates in circuit A and circuit B respectively. \newline
+We transform the circuit by making a duplicated copy of the gates to each wire, and connect the outputs of the duplicated gates to two c-elements.  We label the duplicated circuit halves as circuit A and circuit B.  Then for each wire $w$ we add in intermediate wires $x^A$ and $x^B$ to label the output of the gate of $w$ for circuits A and B respectively.  $x^A$ and $x^B$ are also the inputs to two C-elements.  We can (arbitrarily) label one of the C-element outputs as $w^A$ and the other output as $w^B$.  These then connect to other gates in circuit A and circuit B respectively.  (Note that the outputs of the C-elements can be arbitrarily named and connected to the next gates, and the next gates can also be arbitrarily named $A$ or $B$ as long as it does not create any inconsistencies in the naming convention) %possibly expand on this and also show why such a naming can always occur?
+\newline
 \includegraphics[width=\textwidth]{circuitforproof}
-Because the transformed circuit has some extra wires we want to be able to compare between the wires of the original circuit and that of the duplicated circuit halves.  We define this correspondence to be the mapping of $w^A$ in circuit A and $w^B$ in circuit B to the original wires $w$.  We call this mapping "h".  Additionally for the state graph of the duplicated circuit, the combined states are the state of circuit A and the state of circuit B with quadruple the number of wires for each wire in the original circuit.  For a trace in the duplicated circuit we can project the full states onto a shortened list of wires (ie the wires corresponding to the original circuit), the resulting trace may have successive repeated states and we delete the repeats to obtain a valid trace on the shortened wires.  %do I need to define all the new transitions in duplicated circuit?  maybe
+Because the transformed circuit has some extra wires, we want to define a correspondence to be able to compare between the wires of the original circuit and that of the duplicated circuit halves.  For the duplicated circuit, a combined state is the pairing of the state of circuit A and the state of circuit B. It has quadruple the number of wires for each wire in the original circuit.  The state graph for a duplicated circuit is defined on this combined state.  We define the mapping $h^A: s^full \to s^A$ where $s^full$ is the combined state of a duplicated circuit and $s^A$ are made up of the wires $w^A$ that correspond to the original wires $w$.  $h^B$ is similarly defined to map to $s^B$.  %not sure if I want the mapping to be from variable to variable or specific state to state
+For a trace in the duplicated circuit we project the full states onto a shortened list of wires (ie the wires corresponding to the original circuit). The resulting trace may have successive repeated states and we delete the repeats to obtain a valid trace on the shortened wires.  %do I need to define all the new transitions in duplicated circuit?  maybe
 \newline
-We want to show this circuit behaves similar to the original circuit under normal operation.  We want to prove that $h(sigma^A)$ is a trace of the original circuit.  To do this, we will prove that for all n, if $sigma^A_n$ is the sequence of the first n states of $sigma^A$, then $h(sigma^A)$ is a prefix of a trace in the original circuit  (h might make the trace shorter, so the prefix will not be of length n).  %<need a formal def of similarly<- done <- need to be augmented cuz additional wires <- fine if I talk about deleting extra wires and removing 
-Of course this depends on the initial configuration of the transformed circuit.  But if we set up the initial correspondence correctly, we can show certain properties in all of the traces that can occur.  
+We want to show this circuit behaves similar to the original circuit under normal operation.  In other words we want to prove that after applying either mapping of $h^A$ or $h^B$, the resultant circuit and the original circuit are equivalent.  To do this, we will prove that starting from all valid initial states in the original circuit (with some defined correspondence to the initial state in the duplicated circuit) and for all $n$, if $sigma$ is a trace in the duplicated circuit and $sigma_n$ is the sequence of the first n states of $sigma$, then $h^A(sigma)$ is a prefix of a trace in the original circuit  (h might make the trace shorter, so the prefix will not be of length n).  We prove this by induction on n.  So it starts with n = 0 and the induction step is: if it holds for n, it will hold for n+1.%<need a formal def of similarly<- done <- need to be augmented cuz additional wires <- fine if I talk about deleting extra wires and removing 
+Of course this depends on the initial configuration of the duplicated circuit.  But if we set up the initial correspondence correctly, we can show certain properties in all of the traces that can occur that will lead to the above conclusion.
 \newline
 %need to talk about half of a duplicated circuit <- done 
-We prove this by induction on n.  So it starts with n = 0 and the induction step is: if it holds for n, it will hold for n+1.
-
-To show that the transformed circuit behaves similar to the original circuit, without loss of generality we define the properties for only the A half of the circuit we then show the same reasoning applies to B half of the circuit.  We have the following properties:
+The initial correspondence is given any initial state in the original circuit $s \in S$, for each wire $w$ assign the values for the wires in the duplicated circuit according to $x^A=x^B=w^A=w^B=w$.  This is $s_0$ in the duplicated circuit\newline
+To show that the transformed circuit behaves similar to the original circuit, without loss of generality we assume the properties for only the A half of the circuit.  The same reasoning then applies to the B half of the circuit.  We assume the following properties for $sigma_i$ for some $i \in \mathbb{N}$:
 \begin{enumerate} %1) 2) 3)
-\item  The trace that occurs in A is a trace in original circuit.  If a transition happens from $s_i$, then the next state $s_{i+1}$ is either $s_i=s_{i+1}$ or $T(s_i,s_{i+1})$  %(either trace or state)...  Also maybe delete the trace line... it becomes a general provable property
+\item   $h^A(sigma_i)$ is a prefix of a trace in the original circuit.  If a transition occurs from $s_i$, then the next state $s_{i+1}$ is either $s_i=s_{i+1}$ or $T(s_i,s_{i+1})$  %(either trace or state)...  Also maybe delete the trace line... it becomes a general provable property
 %I feel like this is a bit funky, may have to redo 
-\item  (If a wire is excited in the original circuit then exactly one of the gates or the c-element is excited in the duplicated half.  If a wire is not excited, then neither the gates or the c-element is excited) Given a state $s$ in the original circuit, if wire $w$ is excited in this state, $f_w(s|_I)\neq w$, and given circuit A is also in this state then $f_w(s|_I) \neq x^A$ or $x^A \neq w^A$ (exactly one of these is true).  
-In addition, if wire $w$ is not excited in the original circuit, $f_w(s|_I)=w$, then in the duplicated circuit half $f_w(s|_I)=x^A=w^A$.  %<define correspondence> <- defined above
-\item  If the same output wire in A and B are different, this indicates that one of the c-elements to A or B is excited.  For some wire $w$, if $w^A\neq w^B$ then $x^A=x^B$ 
+\item  (If a wire is excited in the original circuit then exactly one of the gates or the c-element is excited in the duplicated half.  If a wire is not excited, then neither the gates or the c-element is excited) Given a state $s=s_i$ in the original circuit and that circuit A is also in this state, if wire $w$ is excited in this state $f_w(s|_I)\neq w$, then $f_w(s|_I) \neq x^A$ or $x^A \neq w^A$ (exactly one of these is true).  
+In addition, if wire $w$ is not excited in the original circuit $f_w(s|_I)=w$, then in the duplicated circuit half $f_w(s|_I)=x^A=w^A$.  %<define correspondence> <- defined above
+\item  For all output wires $w$, if the corresponding output wire in A and B are different, this indicates that one of the c-elements to A or B is excited.  For all output wires $w$, if $w^A\neq w^B$ then $x^A=x^B$ 
 \end{enumerate}
-We prove these properties through induction.  The initial correspondence is for some initial state in the original circuit $s_0 \in S$, for each wire $w$ assign the wires in the duplicated circuit $x^A=x^B=w^A=w^B=w$.  Then all 3 listed properties above are true.  
+Note that for the initial assignment $s_0$ we choose, all three properties are true.
 Next, assume we are in a state \{$s_i^A$ $s_j^B$\} where these 3 properties are true.  Then 
 \begin{enumerate} %prove the same properties for the next step
 \item  Due to property 2) we know that only wires excited in the original circuit in state $s_i$ may have excited components.  For all wires $w$ that are excited in the original circuit, if $f_w(s_i|_I)\neq x^A$ then a transition on $x^A$ may occur (the value of $w^A$ remains the same).  Otherwise if $x^A \neq w^A$ then if $x^A = x^B$ the c-element is excited and $w^A$ can transition to the new value $w_{next}^A=x^A$.  If $x^A \neq x^B$ then no transition can occur. This is the same as $w$ transitioning in the original circuit and $T(s_i, s_{i+1})$.  When the transition occurs in $x^A$ then $s_i=s_{i+1}$. 
@@ -76,7 +78,8 @@ For all wires w in the newly excited set, since w was previously not excited, th
 For a wire $w$ not excited in $s_i$ and it is not excited in $s_{i+1}$ in the original circuit, in circuit A we have $x^A=w^A$ then $x_{next}^A=w_{next}^A$ and $f_w(s_{i+1}|_I)= x_{next}^A$.  Thus property 2 holds in any next state $s_{i+1}$
 \item  Suppose this property is not true in a possible next state ($w_{next}^A\neq w_{next}^B$ and $x_{next}^A\neq x_{next}^B$).  This means that in the current state if $w^A \neq w^B$ and $x^A=x^B$ then a transition on $x^A$ or $x^B$ occurs.  Without loss of generality, assume $w^B=x^B$, then $x^A$ cannot transition or it would violate property 2 above.  Then $x^B$ transitions.  Because of assumption of 3 in state $s_i^A$, $s_j^B$ there is a possible sequence of transitions on the inputs of wire w in circuits A and B so that they are equal.  This means following a trace of h steps in the original circuit  $x_{i+h}^A$ can be excited which again violates property 2.  Thus the initial assumption is false and this property is true in all possible next states 
 \end{enumerate}
-Finally there is always a transition available since if $w^A\neq w^B$ we can always use the trick above to produce a sequence of transitions so that $w^A= w^B$.  And if the circuit is in this state there is a next availble transition following the original circuit
+Finally there is always a transition available since if $w^A\neq w^B$ we can always use the trick above to produce a sequence of transitions so that $w^A= w^B$.  And if the circuit is in this state there is a next availble transition following the original circuit.  Thus the three properties are true for the step $i+1$.  Induction follows.
+%with these 3 properties show the original claim
 
 \end{document}
 
