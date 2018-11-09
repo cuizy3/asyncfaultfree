@@ -66,8 +66,10 @@ We want to show this circuit behaves similar to the original circuit under norma
 \begin{definition} A \textbf{valid initial state} in half of a duplicated circuit is defined as follows.  Given any initial state in the original circuit $s \in S$, for each wire $w$ assign corresponding wires in the half duplicated circuit that value $c1^A=c2^A=c3^A=w^A=w$.
 \end{definition}
 
+One additional assumption we make about the gates and wire values (including in the presence of faults) are that wire values are strictly 0 or 1, and transitions from excited gates also only produce 0 or 1 and no in between values, no matter the duration of signals from the incoming wires.
+
 \begin{lemma}[1]
-Let $\sigma_n$ be the sequence of the first n states of a trace $\sigma$ (possibly finite).  In the duplicated circuit, for a half circuit $A$ or $B$, if a trace $\sigma$ starts from a valid initial state in that half circuit (and the wires on the other half are strictly 0 or 1, and transitions from excited gates also only produce 0 or 1 and no in between values, no matter the duration of incoming signals), then $h^{A,B}(\sigma_n)$ is a prefix of a trace of the original circuit.
+Let $\sigma_n$ be the sequence of the first n states of a trace $\sigma$ (possibly finite).  In the duplicated circuit, for a half circuit $A$ or $B$, if a trace $\sigma$ starts from a valid initial state in that half circuit, then $h^{A,B}(\sigma_n)$ is a prefix of a trace of the original circuit.
 
 %In the duplicated circuit, for all traces $\{\sigma\}$ that starts from a valid initial state for half of the circuit ${A,B}$, the following is true.  At each state $s_n$ in the trace mapped to $h^{A,B}(s_n)$ in the original circuit, a wire $w$ is excited if and only if exactly one of the following is true: the gate is excited or $x'^{A,B}\neq x^{A,B}$ or $x^{A,B}\neq w^{A,B}$.  (So for a wire that is not excited in the original circuit, neither the gates or the c-element is excited in the duplicated circuit.)
 %need to modify to include two layer c-elements
@@ -143,18 +145,23 @@ Next we will show that adding a single transient error to any wire will still al
 For all traces $\sigma$ in the duplicated circuit where both circuit halves start in the same valid initial state, after adding a transient error to the $c1$, $c2$ or $c3$ wire, $h^{A,B}(\sigma_n)$ is a prefix of a trace in the original circuit for all $n \in \mathbb{N}$.
 \end{lemma}
 \begin{proof}
-Without loss of generality we can show this is true if a transient error occurs in $A$ half.  %We first deal with the $0\to 1 \to 0$ error on $c2^A$.  
-We go through the example when there is a transient on $c2^A$.  We want to split all the cases from the state graph in figure 2 into two categories.  One is when $w^A$ and $w^B$ do not change until after the transient effects pass, we call this case A.  The other is when $w^A$ and $w^B$ do change while a transient is present, we call this case B. \newline
-\begin{center}
-\includegraphics[width=0.75 \textwidth]{lemma3cases}
-\end{center} \newline
-We examine the effects of a $c2^A$ transient that occurs starting at each state in figure 2.  We claim that if the current state is 5a or 6, 7a, 7b and a transient occurs then this results in case A.  Intuitively this is because a transient on $c2^A$ will cause $c3^A$ or $c3^B$ to go from excited to non excited and $w^A$ and $w^B$ cannot change until the transient passes.  We also claim that if the current state is 5b or 1, 2, 3a, 3b, 4, 8, 9a, 9b, this results in case B. \newline
-Next we show that these claims true in the following proof.  First we examine the possibilities in case A.  If the current state is 5a then $c2^A \neq c2^B$, $c2^A \neq c3^A$ and $c1^B\neq c2^B$.
- In this state $s_n$, $c2^A$ experiences a transient and lands in state 4.  It will then proceed from state 4 as usual.   
-If the circuit experiences a fault in state 6, it will revert back to state 5b.  If the circuit experiences a fault in state 7a or 7b, $c3_B$ or $c3_A$ will go from excited to non excited respectively.  $c2^A$ will be excited but there are no other excitations in the local circuit.  Thus $w^A$ and $w^B$ can not change and by semi-modularity the logic gates to these wires cannot be excited or transition on any subsequent states while $w^A$ and $w^B$ do not change.  Then the local circuit will stay in this transient induced state until $c2^A$ finally changes and the circuit returns to its state before the transient. \newline
-Next we look at the possibilities in case B.  If the current state is 5b progresses the state to 6, the correct transition.
+Without loss of generality we can show this is true if a transient error occurs in $A$ half.  We use NuSMV to verify that adding a transient error to each of the $c1$, $c2$ or $c3$ wires do not change the input-output characteristic of the local circuit.  Under normal operation, that is the pair of inputs and outputs cycle through 00 00 $\rightarrow$ 01 00 or 10 00 $\rightarrow$ 11 00 $\rightarrow$ 11 01 or 11 10 $\rightarrow$ 11 11 and repeat of these states but inverted until it is back to the state 00 00.   %We first deal with the $0\to 1 \to 0$ error on $c2^A$.  
+We go through the example to demonstrate why this happens.  When there is a transient on $c2^A$, we analyze what happens when the transient occurs at each state in figure 2.
+\begin{itemize}
+	\item
+      If the current state is 5a then when $c2^A$ experiences a transient, the state
+ becomes identical to state 4.  It will then proceed from state 4 as usual.   
+	\item
+If the circuit experiences a fault in state 6, it will revert back to state 5b.  
+	\item
+If the circuit experiences a fault in state 7a or 7b, $c3_B$ or $c3_A$ will go from excited to non excited respectively.  $c2^A$ will be excited but there are no other excitations in the local circuit.  Thus $w^A$ and $w^B$ can not change and by semi-modularity the logic gates to these wires cannot be excited or transition on any subsequent states while $w^A$ and $w^B$ do not change.  Then the local circuit will stay in this transient induced state until $c2^A$ finally changes and the circuit returns to its state before the transient.
+	\item
+If the current state is 5b progresses the state to 6, the correct transition.
+	\item
 If the current state is 1, 2, 3a, 3b, 4, it does not cause any changes in excitations in the local circuit.  In particular since $w^A$ and $w^B$ do not change, then by semi-modularity the excited/unexcitedness of the 4C gates are maintained.  So the transient induced state graph is a copy of the portion containing states 1, 2, 3a, 3b, 4 only with $c2^A$ value flipped. Eventually they all transition to state 5a and proceed from there as usual.
+	\item
 Finally if the current state is 8, 9a, 9b, $c2^A$ will be newly excited, but does not affect the excitations of other parts of the local circuit.  If $c2^A$ transitions, it returns to a state on the state graph, otherwise it follows the transient induced state graph which is a copy of the portion containing states 8, 9a, 9b only with $c2^A$ value flipped.  If $c2^A$ doesn't transition while the rest of the circuit changes, it ends in state 10 with $c2^A$ flipped.  This is actually the exact complementary state of state 1 with a transient, which we have already dealt with.
+\end{itemize}
 %c3
 A similar reasoning would then apply if a transient error occurs in $c1^A$, $c3^A$, and also for the $B$ half.  
 \end{proof}
