@@ -61,12 +61,26 @@ We assume that the circuit is implemented either as generalized C-element or sta
 Because the transformed circuit has some extra wires, we want to define a correspondence to be able to compare between the wires of the original circuit and that of the duplicated circuit halves.  For the duplicated circuit, a combined state is the pairing of the state of circuit A and the state of circuit B. It has six times the number of wires for each output wire in the original circuit.  The state graph for a duplicated circuit is defined on this combined state.  We define the half-circuit mapping $h^A: s^{full} \to s^A$ where $s^{full}$ is the combined state of a duplicated circuit and $s^A$ are made up of the wires $w^A$ that correspond to the original wires $w$.  The half-circuit mapping $h^B$ is similarly defined to map to $s^B$.  Note that the $h(\sigma)$ mappings are overloaded for a trace, where it outputs a mapped state for each of the states in a trace.%not sure if I want the mapping to be from variable to variable or specific state to state
 For a trace in the duplicated circuit we project the full states onto a shortened list of wires (ie the wires corresponding to the original circuit). The resulting trace may have successive repeated states and we delete the repeats to obtain a valid trace on the shortened wires.  %do I need to define all the new transitions in duplicated circuit?  maybe
 \newline
-We want to show this circuit behaves similar to the original circuit under normal operation.  In other words we want to prove that after applying either mapping of $h^A$ or $h^B$, the resultant circuit and the original circuit are equivalent.  We start by first proving the following lemma.
+We want to show this circuit behaves similar to the original circuit under normal operation.  In other words we want to prove that after applying either mapping of $h^A$ or $h^B$, the resultant circuit and the original circuit are equivalent.  We first prove lemma 1 which states for each half of a circuit, if a transition occurs it must follow the transitions of the state graphs in the original circuit.  However this does not guarantee that such a transition always exists so we also need to prove lemma 2 to show that a transition always exists and the circuit cannot deadlock.  These two properties combined together show that all traces in the duplicated circuit can be mapped to a trace in the original circuit.
 
 \begin{definition} A \textbf{valid initial state} in half of a duplicated circuit is defined as follows.  Given any initial state in the original circuit $s \in S$, for each wire $w$ assign that value to corresponding wires in the half duplicated circuit so that $w=set^A=reset^A=c1^A=c2^A=c3^A=w^A$.  We can also asume that $w=set=reset$ in the original circuit.
 \end{definition}
-For all discussion in this document, if we consider the trace of a duplicated circuit we assume that each half starts from a valid initial state.  Also that both sides start from the same valid initial state.  I will not include this assumption in the lemma definition to avoid convoluted wordings.  
+\textbf{
+For all discussion in this document, if we consider the trace of a duplicated circuit we assume that each half starts from a valid initial state.  And that both sides start from the same valid initial state.  I will not include this assumption in the subsequent lemma definitions to avoid complicated wording.  }
 One additional assumption we make about the gates and wire values (including in the presence of faults) are that wire values are strictly 0 or 1, and transitions from excited gates also only produce 0 or 1 and no in between values, no matter the duration of signals from the incoming wires.
+
+\begin{tabular}{ c | c | c | c |c|c}
+  set & reset & set excitation & reset excitation & $c1^A$ \\
+\hline
+   0&0&exc&exc&0& (1)\\
+   0&1&exc&unc&0 &(2)\\
+   1&0&unc&exc&0 &(3)\\
+   1&1&unc&unc&0 &(4)\\
+   1&1&exc&exc&1 &(5)\\
+   1&0&exc&unc&1 &(6)\\
+   0&1&unc&exc&1 &(7)\\
+   0&0&unc&unc&1 &(8)\\
+\end{tabular}
 
 \begin{lemma}[1]
 Let $\sigma_n$ be the sequence of the first n states of a trace $\sigma$ (possibly finite).  In the duplicated circuit, for a half circuit $A$ or $B$, if a trace $\sigma$ starts from a valid initial state in that half circuit, then $h^{A,B}(\sigma_n)$ is a prefix of a trace of the original circuit.
@@ -120,11 +134,11 @@ Note that the previous proof does not place any requirements on the other half o
 \end{figure}
 
 \begin{lemma}[2]
-For all traces $\sigma$ in the duplicated circuit where both circuit halves start in the same valid initial state, deadlock does not occur.
+For all traces $\sigma$ in the duplicated circuit, deadlock does not occur.
 \end{lemma}
 \begin{proof}
-We first show that if the duplicated circuit starts in the same valid initial state, then each wire block will be in one of the states in the above figure.  The figure halves the number of cases, after case 10 the circuit will repeat as from case 1 except with the 0's and 1's inverted.  Thus we only need to analyze the first 10 states.  \newline
-We prove this property by induction.  We look at the base case of $c1^A=c2^A=c3^A=w^A=c1^B=c2^B=c3^B=w^B=w$ for every wire $w$ in the original circuit.  A wire $w$ can be either excited or unexcited in the original circuit. If the original wire $w$ is unexcited this corresponds to case 1 (or case 10 by inverting the 1's or 0's which we will here on ignore, but each case technically represents two states).  If $w$ is excited then this is case 2.  Thus this property is true for the base case. \newline
+We first show that for the duplicated circuit, each wire block will be in one of the states in the above figure.  The figure halves the number of cases, after case 10 the circuit will repeat as from case 1 except with the 0's and 1's inverted.  Thus we only need to analyze the first 10 states.  \newline
+We prove this initial property by induction.  We look at the base case of $c1^A=c2^A=c3^A=w^A=c1^B=c2^B=c3^B=w^B=w$ for every wire $w$ in the original circuit.  A wire $w$ can be either excited or unexcited in the original circuit. If the original wire $w$ is unexcited this corresponds to case 1 (or case 10 by inverting the 1's or 0's which we will here on ignore, but each case technically represents two states).  If $w$ is excited then this is case 2.  Thus this property is true for the base case. \newline
 
 In the induction step, I assume that this property is true for state $s_n$ and show it is true for $s_{n+1}$.  \newline
 We examine all possible next transitions by enumerating all the possible cases and within each case all possible transitions on each wire. \newline
@@ -137,7 +151,7 @@ Cases 5a/5b/7a/7b/9a/9b:  These cases can also be analyzed together.  Again we n
 \newline
 Since all cases result in a next state in the figure, the induction step is complete.\newline
 
-To show that deadlock does not occur, we show that we can always find an excited wire at any state $s_n$ of a duplicated circuit which starts in the same valid initial state.  $s_n$ can be split into two cases, one is that for every wire block $w$ all wires in the A half and B half are equal that is $w^A=w^B$, the second is that there exists at least one wire $v$ such that $v^A\neq v^B$.  In the first case, if every output wire pair are equal, then $h^A(s_n)=h^B(s_n)$ and in every reachable state there exists an excited wire $u$ in the original circuit.  By lemma 1 both halves of the duplicated circuit for $u$ is excited.  By the property above, the circuit must be in case 2-9 for $u$.  In each of these cases at least one wire is excited.  \newline
+To show that deadlock does not occur, we show that we can always find an excited wire at any state $s_n$ of a duplicated circuit.  $s_n$ can be split into two cases, one is that for every wire block $w$ all wires in the A half and B half are equal that is $w^A=w^B$, the second is that there exists at least one wire $v$ such that $v^A\neq v^B$.  In the first case, if every output wire pair are equal, then $h^A(s_n)=h^B(s_n)$ and in every reachable state there exists an excited wire $u$ in the original circuit.  By lemma 1 both halves of the duplicated circuit for $u$ is excited.  By the property above, the circuit must be in case 2-9 for $u$.  In each of these cases at least one wire is excited.  \newline
 In the second case, for some wire $v$ such that $v^A\neq v^B$, then using the property above $v$ is in case 9a or 9b which has an excited wire, either $v^A$ or $v^B$.  Since there are next transitions for both cases, deadlock does not occur.
 \end{proof}
 
@@ -151,13 +165,13 @@ For all traces $\sigma$ in the duplicated circuit starting from a valid initial 
 \section{Single transient error analysis}
 \begin{definition}A transient error on a wire $x$ can happen so that from the start of the transient error $x=/~x^{init}$.  Once the transient passes, the wire is able to transition again based on its inputs. %do I need to talk about when transient is not ~x?  ie hold same value?  That's the same as a longer delay
 \end{definition}
-Next we will show that adding a single transient error to any wire will still allow one of the half circuits to progress as normal.  We split the wires into two sets based on their properties when a single transient error is added.  Lemma 3 shows that if a single error is added to $c1$, $c2$ or $c3$ wires, the output wires still follow the original state graph.  Lemma 4 shows that if a single error is added to any of the other wires, then the $c1$, $c2$, $c3$ wires follow a similar order to the non-fault case and thus the output wires can never be in a deadlocked state because the 'saved' states earlier in the c-element chain will rescue the circuit from deadlock.
+Next we will show that adding a single transient error to any wire will still allow one of the half circuits to progress as normal.  Since the 'good' half will always progress according to the original state graph if a transition is available, we just need to prove that it never deadlocks.  To do this we prove some properties that are true when we add a single transient error.  We split the wires into two sets based on their properties when a single transient error is added.  Lemma 3 shows that if a single error is added to $c1$, $c2$ or $c3$ wires, the output wires still follow the original state graph.  Lemma 4 shows that if a single error is added to any of the other wires, then the $c1$, $c2$, $c3$ wires follow a similar order to the non-fault case and thus the output wire pairs can never be different at deadlock.  Then we combine these lemmas to show that this implies that there is no deadlock.
 \begin{lemma}[3]
-For all traces $\sigma$ in the duplicated circuit, including a single transient error to a $c1$, $c2$ or $c3$ wire of some wire $w$, $h^{A,B}(\sigma_n)$ is a prefix of a trace in the original circuit for all $n \in \mathbb{N}$.
+For all traces $\sigma$ in the duplicated circuit, with a single transient error occurring on a $c1$, $c2$ or $c3$ wire of some wire $w$ at any point in the trace, then $h^{A,B}(\sigma_n)$ is a prefix of a trace in the original circuit for all $n \in \mathbb{N}$.
 \end{lemma}
 \begin{proof}
-Without loss of generality we can show this is true if a transient error occurs in $A$ half.  We use NuSMV to verify that adding a transient error to each of the $c1$, $c2$ or $c3$ wires do not change the input-output characteristic of the local circuit.  Under normal operation, that is the pair of inputs and outputs cycle through 00 00 $\rightarrow$ 01 00 or 10 00 $\rightarrow$ 11 00 $\rightarrow$ 11 01 or 11 10 $\rightarrow$ 11 11 and repeat of these states but inverted until it is back to the state 00 00.   %We first deal with the $0\to 1 \to 0$ error on $c2^A$.  
-We go through the example to demonstrate why this happens.  When there is a transient on $c2^A$, we analyze what happens when the transient occurs at each state in figure 2.
+Without loss of generality we can show this is true if a transient error occurs in the $A$ half.  We use NuSMV to verify that adding a transient error to each of the $c1$, $c2$ or $c3$ wires do not change the input-output characteristic of the local circuit.  Under normal operation, that is the pair of inputs and outputs cycle through 00 00 $\rightarrow$ 01 00 or 10 00 $\rightarrow$ 11 00 $\rightarrow$ 11 01 or 11 10 $\rightarrow$ 11 11 or 11 11 $\rightarrow$ 10 11 or 01 11 $\rightarrow$ 00 11 $\rightarrow$ 00 10 or 00 01 $\rightarrow$ 00 00.  Thus the property verified in NuSMV is that when a single transient error can happen spontaneously on those wires, the cycle mentioned previously is always true.    %We first deal with the $0\to 1 \to 0$ error on $c2^A$.  
+We go through an example of a transient on $c2^A$ to demonstrate why this happens.  By lemma 2 the normal circuit will be at some state in figure 2, so we analyze the transient occurring at each state in figure 2.
 \begin{itemize}
 	\item
       If the current state is 5a then when $c2^A$ experiences a transient, the state
@@ -185,23 +199,24 @@ A similar reasoning would then apply if a transient error occurs in $c1^A$, $c3^
 \end{figure}
 
 \begin{lemma}[4]
-For all states $s_n$ from a trace $\sigma$ in the duplicated circuit where both circuit halves start in the same valid initial state, after adding a fault to any wire other than $c1$, $c2$ or $c3$, the following property is true.  If a transition is available on the $c1$ $c2$ and $c3$ wires, it transitions according to Figure.
+For all traces $\sigma$ in the duplicated circuit, that allows adding a fault to any wire other than $c1$, $c2$ or $c3$, the following property is true: the $c1$ $c2$ and $c3$ wires of each wire $w$ is always in a state of Figure 3.
 \end{lemma}
 \begin{proof}
-Without loss of generality we prove this is true when a fault occurs in the A half.  The same reasoning applies when a fault occurs in the B half.  The property we want to show by induction is that at any state $s_n$ in the trace $\sigma$, for every wire $w$ where the fault is not in $c1$, $c2$ or $c3$, the $c1$, $c2$ and $c3$ variables follow the state transitions in the figure.  Again we only analyze for cases 1-6 as 7 on behave identically to cases 1-6 except with the 0's and 1's flipped.\newline
-The base case is when no transient occurs, under normal operation these wires will always be in a state in the state transition diagram by lemma 2. \newline
-In the induction step we assume $s_k$ is a state in the state transition diagram for a wire $w$, then at $s_{k+1}$ we look at the possible next states.  \newline
-Case 1:  There are no faults on $c1$ or $c2$ and thus $c2$ and $c3$ cannot be excited.  $c1$ can be excited depending on the inputs to the 4 input C-element.  Therefore, if there is a transition from this state it must be to case 2a or 2b.\newline
-Case 2a/2b:  Again, since there are no faults on $c1$ or $c2$ then $c2$ and $c3$ cannot be excited.  And $c1$ cannot be excited to 0 because $w$ is in an excited to 1 state and if $c1$ is excited to 0 that would contradict lemma 1 as $w^b$ cannot change.\newline
+Without loss of generality we prove this is true when a fault occurs in the A half.  The property we want to show by induction is that at any state $s_n$ in the trace $\sigma$ the $c1$, $c2$ and $c3$ variables follow the state transitions in the figure, for every wire $w$ where the fault is not in $c1$, $c2$ or $c3$.  Again we only analyze for cases 1-6 as 7 onwards behave identically to cases 1-6 except with the 0's and 1's flipped.\newline
+The base case is for the valid initial state, projecting the lemma 2 states to just the $c1$, $c2$ or $c3$ wires shows this is true. \newline
+In the induction step we assume $s_k$ is a state in figure 3 for a wire $w$, then at $s_{k+1}$ we look at the possible next states.  \newline
+Case 1:  $c2$ and $c3$ are not excited because there are no faults on $c1$ or $c2$.  $c1$ can be excited depending on the inputs to the 4 input C-element.  Therefore, if there is a transition from this state it must be to case 2a or 2b.\newline
+Case 2a/2b:  Again, $c2$ and $c3$ cannot be excited because there are no faults on $c1$ or $c2$.  And $c1$ cannot be excited to 0 because $w$ is in an excited to 1 state and if $c1^{A}$ and $c1^{B}$ is excited to 0 that would contradict lemma 1 for the B half.\newline
 %I might need to show the excited ness of the good 4C gate
-Cases 3-6:  $c1$ cannot be excited 0 due to the same reasoning above as it would contradict lemma 1.  The only possible transitions are on the $c2$ and $c3$ wires and since there are no faults on them they must transition according to the figure.
+Cases 3-6:  $c1$ cannot be excited 0 due to the same reasoning above.  The only possible transitions are on the $c2$ and $c3$ wires and since there are no faults on them they must transition according to the figure.
 \newline
-By induction, we property we set out to prove is true, if there is a transition possible, it transitions according to the non-fault case.
+The same logic applies to when a fault occurs in the B half.  
+By induction, the property we set out to prove is true, if there is a transition possible, the  $c1$ $c2$ and $c3$ wires transitions according to the non-fault case.
 \end{proof}
-A corollary of this is that only one of $c1$ $c2$ or $c3$ pairs can be mismatched.  And thus with any faults that is not at $c1$ $c2$ or $c3$, the output pair at deadlock must be equal.
+A corollary of this is that only one of $c1$ $c2$ or $c3$ pairs can be mismatched.  And thus all output pairs at deadlock must be equal.
 
 \begin{theorem}[2]
-With the addition of a single transient error, starting from all valid initial states in the original circuit (and a predefined correspondence in the duplicated circuit) and for all $n \in \mathbb{N}$, if $\sigma$ is a trace in the duplicated circuit and $\sigma_n$ is the sequence of the first n states of $\sigma$, then one of $h^{A,B}(\sigma_n)$ (the non faulty half) is a prefix of a trace in the original circuit.  And the circuit does not deadlock.  
+With the addition of a single transient error, and for all $n \in \mathbb{N}$, if $\sigma$ is a trace in the duplicated circuit and $\sigma_n$ is the sequence of the first n states of $\sigma$, then one of $h^{A,B}(\sigma_n)$ (the non faulty half) is a prefix of a trace in the original circuit.  And the circuit does not deadlock.  
 \end{theorem}
 \begin{proof}
 Without loss of generality we can assume the fault occurs in the A half of the circuit. 
